@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>画作投稿站</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: #faf9f8;
+            padding: 20px;
+            color: #1e1e1e;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .header p {
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        /* 投稿表单 */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* 图片上传区 */
+        .image-upload {
+            border: 2px dashed #ddd;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .image-upload:hover {
+            border-color: #667eea;
+            background: #f1f3f9;
+        }
+
+        .image-upload img {
+            max-width: 100%;
+            max-height: 200px;
+            display: none;
+            margin-top: 15px;
+            border-radius: 12px;
+        }
+
+        .preview-text {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 作品展示区 */
+        .gallery-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .art-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .art-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        .art-image {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .art-info {
+            padding: 18px;
+        }
+
+        .art-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1e1e1e;
+        }
+
+        .art-author {
+            color: #667eea;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .art-desc {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .art-date {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+
+        /* 提示消息 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            .form-card {
+                padding: 20px;
+            }
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 画作投稿站</h1>
+            <p>分享你的作品，让更多人看见</p>
+        </div>
+
+        <!-- 投稿表单 -->
+        <div class="form-card">
+            <form id="submitForm">
+                <div class="form-group">
+                    <label>🖼️ 作品图片</label>
+                    <div class="image-upload" id="imageUploadArea">
+                        <div class="preview-text">点击或拖拽上传图片</div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none">
+                        <img id="previewImg" alt="预览">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 作品标题</label>
+                    <input type="text" id="title" placeholder="给作品起个名字..." required>
+                </div>
+
+                <div class="form-group">
+                    <label>👩‍🎨 画师名字</label>
+                    <input type="text" id="author" placeholder="你的名字或笔名" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📖 作品简介</label>
+                    <textarea id="description" placeholder="描述你的创作灵感、使用的材料、想表达的情感..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">✨ 发布作品</button>
+            </form>
+        </div>
+
+        <!-- 作品展示区 -->
+        <div class="gallery-title">
+            🖼️ 最新投稿
+        </div>
+        <div id="gallery" class="gallery">
+            <div class="empty-state">暂无作品，快来发布第一个吧~</div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // 获取DOM元素
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const previewImg = document.getElementById('previewImg');
+        const form = document.getElementById('submitForm');
+        const gallery = document.getElementById('gallery');
+        const toast = document.getElementById('toast');
+
+        let currentImageData = null; // 存储图片的base64数据
+
+        // 上传区域点击事件
+        imageUploadArea.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        // 图片选择事件
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentImageData = event.target.result;
+                    previewImg.src = currentImageData;
+                    previewImg.style.display = 'block';
+                    imageUploadArea.querySelector('.preview-text').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 显示提示消息
+        function showMessage(msg, isError = false) {
+            toast.textContent = msg;
+            toast.style.background = isError ? '#e74c3c' : '#333';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 从localStorage加载作品
+        function loadPosts() {
+            const stored = localStorage.getItem('art_posts');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            return [];
+        }
+
+        // 保存作品到localStorage
+        function savePosts(posts) {
+            localStorage.setItem('art_posts', JSON.stringify(posts));
+        }
+
+        // 渲染作品列表
+        function renderGallery() {
+            const posts = loadPosts();
+            
+            if (posts.length === 0) {
+                gallery.innerHTML = '<div class="empty-state">暂无作品，快来发布第一个吧~</div>';
+                return;
+            }
+
+            // 按时间倒序排列（最新的在上面）
+            const sortedPosts = [...posts].reverse();
+
+            gallery.innerHTML = sortedPosts.map(post => `
+                <div class="art-card" data-id="${post.id}">
+                    <img class="art-image" src="${post.imageData}" alt="${post.title}">
+                    <div class="art-info">
+                        <div class="art-title">${escapeHtml(post.title)}</div>
+                        <div class="art-author">🎨 ${escapeHtml(post.author)}</div>
+                        <div class="art-desc">${escapeHtml(post.description)}</div>
+                        <div class="art-date">📅 ${post.date}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 简单的防XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+                return c;
+            });
+        }
+
+        // 提交表单
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            if (!title || !author) {
+                showMessage('请填写作品标题和画师名字', true);
+                return;
+            }
+
+            if (!currentImageData) {
+                showMessage('请上传作品图片', true);
+                return;
+            }
+
+            // 创建新作品
+            const newPost = {
+                id: Date.now(),
+                title: title,
+                author: author,
+                description: description || '无简介',
+                imageData: currentImageData,
+                date: new Date().toLocaleString('zh-CN')
+            };
+
+            // 保存到localStorage
+            const posts = loadPosts();
+            posts.push(newPost);
+            savePosts(posts);
+
+            // 清空表单
+            document.getElementById('title').value = '';
+            document.getElementById('author').value = '';
+            document.getElementById('description').value = '';
+            currentImageData = null;
+            previewImg.style.display = 'none';
+            previewImg.src = '';
+            imageUploadArea.querySelector('.preview-text').style.display = 'block';
+            imageInput.value = '';
+
+            // 重新渲染
+            renderGallery();
+            showMessage('发布成功！');
+        });
+
+        // 页面加载时渲染
+        renderGallery();
+    </script>
+</body>
+</html>
